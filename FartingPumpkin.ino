@@ -101,7 +101,7 @@ void setup() {
 
   // If the Arduino is powering the WAV Trigger, we should wait for the WAV
   //  Trigger to finish reset before trying to send commands.
-  //delay(1000);
+  delay(1000);
 
   // WAV Trigger startup at 57600
   wTrig.start();
@@ -135,7 +135,7 @@ void setup() {
 
   // Always play the background music track in an infinite loop
   wTrig.samplerateOffset(0);            // Reset our sample rate offset
-  wTrig.masterGain(0);                  // Reset the master gain to 0dB
+  wTrig.masterGain(2);                  // Reset the master gain to 0dB
               
   wTrig.trackGain(MUSIC_TRACK, -40);              // Preset Track gain to -40dB
   wTrig.trackPlayPoly(MUSIC_TRACK);               // Start Track
@@ -163,38 +163,24 @@ int i;
   Serial.print("Pir:");
   Serial.println(gPirState);
   
-  if ((!wTrig.isTrackPlaying(gLastFartTrack)  &&
-      gSeqState == PERSON_PRESENT_FARTING)) {
-      Serial.print("Track ");
-      Serial.print(gLastFartTrack);
-      Serial.print(" done\n");
-      wTrig.trackFade(MUSIC_TRACK, 0, 1000, false);   // Fade Music back to full
-      if (gPirState) {
-         gSeqState = PERSON_PRESENT;
-      } 
-      else
-      { 
-         gSeqState = NOBODY_AROUND;
-      }
-  } else if (wTrig.isTrackPlaying(gLastFartTrack)) {
-      Serial.print("Track ");
-      Serial.print(gLastFartTrack);
-      Serial.print(" playing\n");
-  } else {
-      if (gPirState) {
-        gSeqState = PERSON_PRESENT;    
-      } else {
-        gSeqState = NOBODY_AROUND;
-      }
-  }
+  if (gPirState) {
+     gSeqState = PERSON_PRESENT;
+  } 
+  else
+  { 
+      gSeqState = NOBODY_AROUND;
+  } 
 
   // The Metro limits the fart rate to at most once per 10 seconds
   if (gSeqMetro.check() == 1) {
      Serial.println("10 seconds passed");
      Serial.print("gSeqState=");
      Serial.println(gSeqState);
+     // stop the last fart track
+     wTrig.trackFade(gLastFartTrack, -70, 1000, true); 
+     delay(1000);
      if (gSeqState == PERSON_PRESENT) {
-         // Time to fart
+         // Time to fart again
          gRandFartTrack = random(2, gNumTracks-1);
          Serial.print("gRandFartTrack =");
          Serial.println(gRandFartTrack);
@@ -205,7 +191,7 @@ int i;
          wTrig.trackPlayPoly(gRandFartTrack);               // Start Track 1
          wTrig.trackFade(gRandFartTrack, 2, 100, false);   // Fade Track 1 up to 0db over 3 secs
          //wTrig.update();                      
-         wTrig.trackFade(MUSIC_TRACK, -30, 1000, false);  // Fade music track down to -20db
+         //wTrig.trackFade(MUSIC_TRACK, -30, 1000, false);  // Fade music track down to -20db
      } else {
           // nobody around, do nothing
      }
