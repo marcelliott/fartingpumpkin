@@ -28,6 +28,8 @@
 //    5V   <------> Vcc 
 //    Pin7 <------> TrigOut
 //
+//    Pin6 <------> LED
+//
 //    If you want to power the WAV Trigger from the Uno, then close the 5V
 //    solder jumper on the WAV Trigger and connect a 4th wire:
 //
@@ -55,8 +57,8 @@
 #define MUSIC_TRACK (1)
 #define SHORT_FART_START_TRACK (2)  // Add ability to sort farts by length
 #define LONG_FART_START_TRACK  (2)
-#define MAX_FART_LEVEL (1)   // +1 dBm
-#define MAX_MUSIC_LEVEL (0)  // 0 dBm
+#define MAX_FART_LEVEL (-3)   // +1 dBm
+#define MAX_MUSIC_LEVEL (3)  // 0 dBm
 
 enum {
   NOBODY_AROUND = 0, // play music only
@@ -189,21 +191,21 @@ int i;
          gSeqState = PERSON_PRESENT_FARTING;
          wTrig.trackGain(gRandFartTrack, -40);             // Preset Track 1 gain to -40dB
          wTrig.trackPlayPoly(gRandFartTrack);               // Start Track 1
-         wTrig.trackFade(gRandFartTrack, 2, 100, false);   // Fade Track 1 up to 0db over 3 secs
+         wTrig.trackFade(gRandFartTrack, MAX_FART_LEVEL, 100, false);   // Fade Track 1 up to 0db over 2 secs
          //wTrig.update();                      
-         //wTrig.trackFade(MUSIC_TRACK, -30, 1000, false);  // Fade music track down to -20db
+         //wTrig.trackFade(MUSIC_TRACK, -30, 1000, false);  // Fade music track down to -30db
      } else {
           // nobody around, do nothing
      }
            
   } // if (gSeqState.check() == 1)
  
-  // If time to do so, toggle the LED
-  if (gLedMetro.check() == 1) {
-      if (gLedState == 0) gLedState = 1;
-      else gLedState = 0;
-      digitalWrite(LED, gLedState);
-  } // if (gLedMetro.check() == 1)
+  if (gSeqState != NOBODY_AROUND) 
+     gLedState = 1;
+  else 
+     gLedState = 0;
+  digitalWrite(LED, gLedState);
+
 
   // Delay 200 msecs
   delay(200);
